@@ -1,18 +1,29 @@
-import os.path
 from zipfile import ZipFile
 from os import walk
 
+import GuiUtils
+import OSUtils
+from PackUtils import *
+from OSUtils import *
+
 # Constants
-DEFAULT_TEXTURES_FOLDER = "textures"
+DEFAULT_TEXTURES = "textures"
 TEXTURES_PATH = "source_textures/"
 
+
+# Checks the default textures exists
+GuiUtils.sectionPrint("Checking Default Textures")
+if not os.path.exists(TEXTURES_PATH + DEFAULT_TEXTURES):
+    raise Exception("Default textures folder is INVALID")
+
+
 # Gets all the zip files from within TEXTURES_FOLDER
-texture_zips = []
-for (dirpath, dirnames, filenames) in walk(TEXTURES_PATH):
-    texture_zips.extend(filenames)
-    break
+GuiUtils.sectionPrint("Getting Packs")
+texture_zips = OSUtils.getFiles(TEXTURES_PATH)
+
 
 # Iterate through each zip and extract it to its own folder
+GuiUtils.sectionPrint("Extracting Packs")
 for zip_name in texture_zips:
     with ZipFile(TEXTURES_PATH + zip_name, 'r') as zip:
         zip.extractall(path=(TEXTURES_PATH + zip_name.strip(".zip")))
@@ -20,31 +31,21 @@ for zip_name in texture_zips:
 
 
 # Gets all the folders from within TEXTURES_FOLDER
-texture_folders = []
-for (dirpath, dirnames, filenames) in walk(TEXTURES_PATH):
-    texture_folders.extend(dirnames)
-    break
-texture_folders.remove(DEFAULT_TEXTURES_FOLDER)
+texture_folders = OSUtils.getFolders(TEXTURES_PATH)
+texture_folders.remove(DEFAULT_TEXTURES)
 
 
-def checkFolderIntegrity(path):
-    FILE_CHECKS = ["pack.mcmeta", "pack.png"]
-    FOLDER_CHECKS = ["assets/minecraft/textures"]
-    CHECKS = FILE_CHECKS + FOLDER_CHECKS
+# Checks each pack to see if the valid files are present
+GuiUtils.sectionPrint("Checking Packs")
+valid_packs = []
+for pack in texture_folders:
+    if checkTexturePack(TEXTURES_PATH, pack):
+        valid_packs += [pack]
 
-    for check_path in CHECKS:
-        if not os.path.exists(path + "/" + check_path):
-            print("file/folder: \"" + check_path + "\" does not exist!")
-            return False
-    return True
-
-
-print(checkFolderIntegrity(TEXTURES_PATH + texture_folders[0]))
+GuiUtils.sectionPrint("Debug")
+print(valid_packs)
 # Remove the default textures folder from the list of usable folders
 
-
-
-# print(texture_folders)
 
 
 
