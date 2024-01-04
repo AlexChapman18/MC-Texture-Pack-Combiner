@@ -1,15 +1,11 @@
 from zipfile import ZipFile
-from os import walk
+import os
 
 import GuiUtils
+import PackUtils
 import OSUtils
-from PackUtils import *
-from OSUtils import *
-
-# Constants
-DEFAULT_TEXTURES = "textures"
-TEXTURES_PATH = "source_textures/"
-
+from EnvVars import *
+from Pack import Pack
 
 # Checks the default textures exists
 GuiUtils.sectionPrint("Checking Default Textures")
@@ -39,11 +35,28 @@ texture_folders.remove(DEFAULT_TEXTURES)
 GuiUtils.sectionPrint("Checking Packs")
 valid_packs = []
 for pack in texture_folders:
-    if checkTexturePack(TEXTURES_PATH, pack):
+    if PackUtils.checkTexturePack(TEXTURES_PATH, pack):
         valid_packs += [pack]
 
+
+
+
 GuiUtils.sectionPrint("Debug")
-print(valid_packs)
+pack_name = "MyPack1"
+pack_base = "textures"
+pack_format = 22
+pack_description = "My first texture pack"
+newPack = Pack(pack_name, pack_base, pack_format, pack_description)
+newPack.assignTexture("block", "VanillaXBR - 1.20.4", "activator_rail")
+newPack.assignTexture("item", "VanillaXBR - 1.20.4", "*")
+
+
+PackUtils.createBasePack(OUTPUT_PATH, pack_name, newPack.getJson())
+
+
+PackUtils.buildPack(pack_name)
+
+print("Done")
 # Remove the default textures folder from the list of usable folders
 
 
