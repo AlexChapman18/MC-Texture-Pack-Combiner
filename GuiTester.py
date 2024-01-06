@@ -1,21 +1,5 @@
 import tkinter as tk
 
-TYPES = [
-    "blocks",
-    "items",
-    "map",
-    "misc"
-]
-BLOCK = [
-    "cobble",
-    "dirt"
-]
-ITEMS = [
-    "sword",
-    "shield"
-]
-
-
 class App(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)

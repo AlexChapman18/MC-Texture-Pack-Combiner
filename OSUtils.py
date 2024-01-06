@@ -1,3 +1,4 @@
+import os.path
 from os import walk
 from shutil import copytree
 import shutil
@@ -17,6 +18,10 @@ def copyFolder(src, dst):
 
 def copyFile(src, dst):
     shutil.copy(src, dst)
+
+
+def exists(path):
+    return os.path.exists(path)
 
 
 def copyFileNewName(src, dst):

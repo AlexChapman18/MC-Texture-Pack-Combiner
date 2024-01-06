@@ -1,68 +1,34 @@
 import tkinter as tk
+from tkinter import ttk
 
-primary = [
-    'option 1',
-    'option 2',
-    'option 3',
-    'option 4'
-    ]
+def update_second_dropdown(*args):
+    selected_item = first_dropdown.get()
 
-options1 = [
-    'option 1.1',
-    'option 1.2',
-    'option 1.3',
-    'option 1.4'
-    ]
-options2 = [
-    'option 2.1',
-    'option 2.2',
-    'option 2.3',
-    'option 2.4'
-    ]
-
-secondary = options1
-
-
-#Window builder
-window = tk.Tk()
-window.geometry('400x200')
-
-#Primary Drop Down Options
-primDD = tk.StringVar()
-primDD.set(primary[0])
-primOpt = tk.OptionMenu(window, primDD, *primary)
-
-#secondary Selector
-if primDD.get() == 'options 1':
-    secondary = options1
-elif primDD.get() == 'options 2':
-    secondary = options2
-
-#Secondary Drop Down Options
-secDD = tk.StringVar()
-secDD.set(secondary[0])
-secOpt = tk.OptionMenu(window, secDD, *secondary)
-
-#Window Layout
-primOpt.config(width=20)
-secOpt.config(width=30)
-primOpt.grid(row=0, column=0, padx=1.25, pady=1.25)
-secOpt.grid(row=0, column=1, padx=1.25, pady=1.25)
-
-def change_optionmenu2(*args):
-    print(args)
-    if primDD.get() == "option 1":
-        new_options = options1
-    elif primDD.get() == "option 2":
-        new_options = options2
+    # Update options for the second dropdown based on the selected item in the first dropdown
+    if selected_item == "Option 1":
+        second_dropdown['values'] = ["Option 1 - A", "Option 1 - B", "Option 1 - C"]
+    elif selected_item == "Option 2":
+        second_dropdown['values'] = ["Option 2 - X", "Option 2 - Y", "Option 2 - Z"]
     else:
-        new_options = ["Not coded in"]
-    secDD.set('')
-    secOpt['menu'].delete(0, 'end')
-    for choice in new_options:
-        secOpt['menu'].add_command(label=choice, command=tk._setit(secDD, choice))
-    secDD.set(new_options[0])
+        second_dropdown['values'] = []
 
-primDD.trace("w", change_optionmenu2)
+# Create the main window
+root = tk.Tk()
+root.title("Dropdown Example")
 
-window.mainloop()
+# Create the first dropdown
+first_label = tk.Label(root, text="Select Category:")
+first_label.grid(row=0, column=0, padx=10, pady=10, sticky=tk.W)
+categories = ["Option 1", "Option 2"]
+first_dropdown = ttk.Combobox(root, values=categories, state="readonly")
+first_dropdown.grid(row=0, column=1, padx=10, pady=10, sticky=tk.W)
+first_dropdown.bind("<<ComboboxSelected>>", update_second_dropdown)
+
+# Create the second dropdown
+second_label = tk.Label(root, text="Select Subcategory:")
+second_label.grid(row=1, column=0, padx=10, pady=10, sticky=tk.W)
+second_dropdown = ttk.Combobox(root, values=[], state="readonly")
+second_dropdown.grid(row=1, column=1, padx=10, pady=10, sticky=tk.W)
+
+# Run the Tkinter event loop
+root.mainloop()
