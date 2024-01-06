@@ -1,4 +1,5 @@
-from tkinter import ttk
+import tkinter
+from tkinter import ttk, W
 from zipfile import ZipFile
 import os
 
@@ -8,7 +9,6 @@ import OSUtils
 from EnvVars import *
 import tkinter as tk
 from PIL import Image, ImageTk
-
 
 # Checks the default textures exists
 GuiUtils.sectionPrint("Checking Default Textures")
@@ -95,29 +95,26 @@ class StartPage(tk.Frame):
 class selectPage(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
-        tk.Label(self, text="MC Texture Pack Combiner", bg="black", fg="white", font=("none", 25)).pack()
+        tk.Label(self, text="MC Texture Pack Combiner", bg="black", fg="white", font=("none", 25)).grid(row=0, column=0,
+                                                                                                        columnspan=20)
         tk.Label(self, text="Select the texture you would like to change:", bg="black", fg="white",
-                 font=("none", 10)).pack()
-        tk.Label(self, text="Texture type:", bg="black", fg="white").pack()
-
-
-
-
-
-
+                 font=("none", 10)).grid(row=1, column=0, columnspan=6)
 
         def changeTextureDD(*args):
             new_options = typesAndTextures.get(chosenType.get())
             if not new_options:
                 new_options = ["null"]
             chosenTexture["values"] = new_options
+            chosenTexture.set(new_options[0])
+            changePictures()
 
         def changePictures(*args):
             for i in range(len(displayPacks)):
                 if displayPacks[i] == "textures":
                     path = TEXTURES_PATH + DEFAULT_TEXTURES + "/" + chosenType.get() + "/" + chosenTexture.get()
                 else:
-                    path = TEXTURES_PATH + displayPacks[i] + "/assets/minecraft/textures/" + chosenType.get() + "/" + chosenTexture.get()
+                    path = TEXTURES_PATH + displayPacks[
+                        i] + "/assets/minecraft/textures/" + chosenType.get() + "/" + chosenTexture.get()
                 if OSUtils.exists(path) and (".png" in path):
                     img = resizeImage(path, 100, 100)
                     packImages[i]['image'] = img
@@ -125,37 +122,48 @@ class selectPage(tk.Frame):
                 else:
                     print(path)
 
-
-        # types dropdown
-        typeDD = tk.StringVar(self)
-        typeDD.set(next(iter(typesAndTextures)))
-        chosenType = ttk.Combobox(self, values=list(typesAndTextures.keys()), state="readonly")
-        chosenType.pack()
-        chosenType.bind("<<ComboboxSelected>>", changeTextureDD)
-
-        # Textures dropdown
-        textureDD = tk.StringVar(self)
-        textureDD.set(typesAndTextures.get(next(iter(typesAndTextures)))[0])
-        chosenTexture = ttk.Combobox(self, values=typesAndTextures.get(next(iter(typesAndTextures))), state="readonly")
-        chosenTexture.pack()
-        chosenTexture.bind("<<ComboboxSelected>>", changePictures)
-
-
         displayPacks = ["textures"] + valid_packs
         packImages = []
-        for pack in displayPacks:
+
+        # types dropdown
+        tk.Label(self, text="Texture type:", bg="black", fg="white").grid(row=2, column=0, columnspan=1, pady=5,
+                                                                          sticky=tkinter.E)
+        chosenType = ttk.Combobox(self, values=list(typesAndTextures.keys()), state="readonly")
+        chosenType.grid(row=2, column=1, columnspan=1, pady=5, sticky=tkinter.W)
+        chosenType.bind("<<ComboboxSelected>>", changeTextureDD)
+        chosenType.set(next(iter(typesAndTextures)))
+
+        # typebase dropdown
+        tk.Label(self, text="Type base:", bg="black", fg="white").grid(row=2, column=2, columnspan=1, pady=5,
+                                                                       sticky=tkinter.E)
+        chosenTypeBase = ttk.Combobox(self, values=list(displayPacks), state="readonly")
+        chosenTypeBase.grid(row=2, column=3, columnspan=1, pady=5, sticky=tkinter.W)
+        # chosenTypeBase.bind("<<ComboboxSelected>>", changeTextureDD)
+        chosenTypeBase.set(displayPacks[0])
+
+        # Textures dropdown
+        tk.Label(self, text="Texture:", bg="black", fg="white").grid(row=3, column=0, columnspan=1, sticky=tkinter.E)
+        chosenTexture = ttk.Combobox(self, values=typesAndTextures.get(next(iter(typesAndTextures))), state="readonly")
+        chosenTexture.grid(row=3, column=1, columnspan=1, sticky=tkinter.W)
+        chosenTexture.bind("<<ComboboxSelected>>", changePictures)
+        chosenTexture.set(typesAndTextures.get(next(iter(typesAndTextures)))[0])
+
+        radios = tkinter.IntVar(self, 0)
+        for i, pack in enumerate(displayPacks):
             if pack == "textures":
                 path = TEXTURES_PATH + DEFAULT_TEXTURES + "/" + chosenType.get() + "/" + chosenTexture.get()
             else:
                 path = TEXTURES_PATH + pack + "/assets/minecraft/textures/" + chosenType.get() + "/" + chosenTexture.get()
-            if not(OSUtils.exists(path) and (".png" in path)):
+            if not (OSUtils.exists(path) and (".png" in path)):
                 path = TEXTURES_PATH + DEFAULT_TEXTURES + "/block/dirt.png"
             img = resizeImage(path, 100, 100)
             texturesImage = ttk.Label(self)
             texturesImage['image'] = img
             img.image = img
-            texturesImage.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+            texturesImage.grid(row=4, column=i, columnspan=1, pady=5)
+            tkinter.ttk.Radiobutton(self, text=pack, variable=radios, value=i).grid(row=5, column=i, columnspan=1, pady=5)
             packImages.append(texturesImage)
+
 
 # GUI
 
@@ -166,11 +174,8 @@ def resizeImage(image_path, width, height):
     return ImageTk.PhotoImage(resized_image)
 
 
-
-
 app = App()
 app.mainloop()
-
 
 # GuiUtils.sectionPrint("Debug")
 # pack_name = "MyPack1"
