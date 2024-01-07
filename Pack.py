@@ -18,8 +18,10 @@ PACK_JSON_TEMPLATE = """
 
 
 class Pack:
-    def __init__(self, pack_name, pack_base, pack_format, pack_description, types):
+    def __init__(self):
         self.pack_json = json.loads(PACK_JSON_TEMPLATE)
+
+    def setPackInfo(self, pack_name, pack_base, pack_format, pack_description, types):
         self.pack_json["pckmeta"]["name"] = pack_name
         self.pack_json["pckmeta"]["base_pack"] = pack_base
         self.pack_json["mcmeta"]["pack"]["pack_format"] = pack_format
@@ -29,13 +31,13 @@ class Pack:
             self.pack_json["texture_data"][type+"_base"] = pack_base
 
     def assignTexture(self, type, pack, name):
-        self.pack_json["texture_data"][type].update({pack: name})
-
-    def assignTextures(self, type, pack):
-        self.pack_json["texture_data"][type] += {pack: "*"}
+        self.pack_json["texture_data"][type].update({name: pack})
 
     def getJson(self):
         return self.pack_json
 
     def changeTypeBase(self, type, base):
         self.pack_json["texture_data"][type + "_base"] = base
+
+    def getPackName(self):
+        return self.pack_json["pckmeta"]["name"]

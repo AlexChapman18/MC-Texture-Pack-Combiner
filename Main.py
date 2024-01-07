@@ -48,7 +48,7 @@ for folder in folders:
     textures = OSUtils.getFiles(TEXTURES_PATH + DEFAULT_TEXTURES + "/" + folder)
     typesAndTextures.update({folder: textures})
 
-newpack = None
+newpack = Pack()
 
 # GUI
 
@@ -96,14 +96,12 @@ class StartPage(tk.Frame):
         tk.Button(self, text="Proceed", command=lambda: self.submitForm(packName.get(), basePack.get(), version.get())).pack()
 
     def submitForm(self, pack_name, basePack, version):
-        global newpack
-        newpack = Pack(pack_name, basePack, int(version), "Default pack description", list(typesAndTextures.keys()))
+        newpack.setPackInfo(pack_name, basePack, int(version), "Default pack description", list(typesAndTextures.keys()))
         self.master.switch_frame(selectPage)
 
 
 class selectPage(tk.Frame):
     def __init__(self, master):
-        global newpack
         tk.Frame.__init__(self, master)
         tk.Label(self, text="MC Texture Pack Combiner", bg="black", fg="white", font=("none", 25)).grid(row=0, column=0,
                                                                                                         columnspan=20)
@@ -121,6 +119,11 @@ class selectPage(tk.Frame):
         def changeTypeBase(*args):
             newpack.changeTypeBase(chosenType.get(), chosenTypeBase.get())
 
+        def createPack(*args):
+            PackUtils.createBasePack(OUTPUT_PATH, newpack.getPackName(), newPack.getJson())
+            PackUtils.buildPack(newpack.getPackName())
+
+
         def changeTexture(*args):
             newpack.assignTexture(chosenType.get(), radios.get(), chosenTexture.get())
 
@@ -131,12 +134,11 @@ class selectPage(tk.Frame):
                 else:
                     path = TEXTURES_PATH + displayPacks[
                         i] + "/assets/minecraft/textures/" + chosenType.get() + "/" + chosenTexture.get()
-                if OSUtils.exists(path) and (".png" in path):
-                    img = resizeImage(path, 100, 100)
-                    packImages[i]['image'] = img
-                    img.image = img
-                else:
-                    print(path)
+                if not OSUtils.exists(path) or not (".png" in path):
+                    path = TEXTURES_PATH + DEFAULT_TEXTURES + "/block/dirt.png"
+                img = resizeImage(path, 100, 100)
+                packImages[i]['image'] = img
+                img.image = img
 
         packImages = []
 
@@ -181,8 +183,8 @@ class selectPage(tk.Frame):
                                                                                     pady=5)
             packImages.append(texturesImage)
 
-        (tk.Button(self, text="Change texture", command=changeTexture)
-         .grid(row=6, column=0, columnspan=20))
+        tk.Button(self, text="Change texture", command=changeTexture).grid(row=6, column=0, columnspan=20)
+        tk.Button(self, text="create pack", command=createPack).grid(row=7, column=0, columnspan=20)
 
 
 # GUI
@@ -190,24 +192,9 @@ class selectPage(tk.Frame):
 # What a stupid function
 def resizeImage(image_path, width, height):
     original_image = Image.open(image_path)
-    resized_image = original_image.resize((width, height))
+    resized_image = original_image.resize((width, height), Image.LANCZOS)
     return ImageTk.PhotoImage(resized_image)
 
 
 app = App()
 app.mainloop()
-
-GuiUtils.sectionPrint("Debug")
-pack_name = "MyPack1"
-pack_base = "textures"
-pack_format = 22
-pack_description = "My first texture pack"
-newPack = Pack(pack_name, pack_base, pack_format, pack_description, typesAndTextures.keys())
-newPack.assignTexture("block", "VanillaXBR - 1.20.4", "activator_rail")
-newPack.assignTexture("item", "VanillaXBR - 1.20.4", "*")
-#
-# PackUtils.createBasePack(OUTPUT_PATH, pack_name, newPack.getJson())
-#
-# PackUtils.buildPack(pack_name)
-#
-# print("Done")
