@@ -27,7 +27,7 @@ def checkTexturePack(packs_folder, pack_name):
         return False
 
 
-def createBasePack(outputs_folder, pack_name, pack_json):
+def createBasePack(outputs_folder, pack_name, pack_json, ):
     pack_path = outputs_folder + pack_name
 
     if os.path.exists(pack_path):

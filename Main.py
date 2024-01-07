@@ -10,6 +10,8 @@ from EnvVars import *
 import tkinter as tk
 from PIL import Image, ImageTk
 
+from Pack import Pack
+
 # Checks the default textures exists
 GuiUtils.sectionPrint("Checking Default Textures")
 if not os.path.exists(TEXTURES_PATH + DEFAULT_TEXTURES):
@@ -36,6 +38,7 @@ valid_packs = []
 for pack in texture_folders:
     if PackUtils.checkTexturePack(TEXTURES_PATH, pack):
         valid_packs += [pack]
+displayPacks = ["textures"] + valid_packs
 
 # Getting all block types and textures
 GuiUtils.sectionPrint("Getting blocks and textures")
@@ -45,6 +48,7 @@ for folder in folders:
     textures = OSUtils.getFiles(TEXTURES_PATH + DEFAULT_TEXTURES + "/" + folder)
     typesAndTextures.update({folder: textures})
 
+newpack = None
 
 # GUI
 
@@ -67,6 +71,7 @@ class App(tk.Tk):
 
 class StartPage(tk.Frame):
     def __init__(self, master):
+        self.master = master
         tk.Frame.__init__(self, master)
         tk.Label(self, text="MC Texture Pack Combiner", bg="black", fg="white", font=("none", 25)).pack()
         tk.Label(self, text="by Alex", bg="black", fg="white", font=("none", 10)).pack()
@@ -83,17 +88,22 @@ class StartPage(tk.Frame):
         tk.Label(self, text="Please select the name of the texture pack below:", bg="black", fg="white").pack()
         tk.Label(self, text="\"textures\" is the default Minecraft textures", bg="black", fg="white",
                  font=("none", 8)).pack()
-        variable = tk.StringVar(self)
-        variable.set(valid_packs[0])
-        basePack = tk.OptionMenu(self, variable, *valid_packs)
+        basePack = ttk.Combobox(self, values=displayPacks, state="readonly")
+        basePack.set(displayPacks[0])
         basePack.pack()
 
         tk.Label(self, fg="white", bg="black").pack()
-        tk.Button(self, text="Proceed", command=lambda: master.switch_frame(selectPage)).pack()
+        tk.Button(self, text="Proceed", command=lambda: self.submitForm(packName.get(), basePack.get(), version.get())).pack()
+
+    def submitForm(self, pack_name, basePack, version):
+        global newpack
+        newpack = Pack(pack_name, basePack, int(version), "Default pack description", list(typesAndTextures.keys()))
+        self.master.switch_frame(selectPage)
 
 
 class selectPage(tk.Frame):
     def __init__(self, master):
+        global newpack
         tk.Frame.__init__(self, master)
         tk.Label(self, text="MC Texture Pack Combiner", bg="black", fg="white", font=("none", 25)).grid(row=0, column=0,
                                                                                                         columnspan=20)
@@ -107,6 +117,12 @@ class selectPage(tk.Frame):
             chosenTexture["values"] = new_options
             chosenTexture.set(new_options[0])
             changePictures()
+
+        def changeTypeBase(*args):
+            newpack.changeTypeBase(chosenType.get(), chosenTypeBase.get())
+
+        def changeTexture(*args):
+            newpack.assignTexture(chosenType.get(), radios.get(), chosenTexture.get())
 
         def changePictures(*args):
             for i in range(len(displayPacks)):
@@ -122,7 +138,6 @@ class selectPage(tk.Frame):
                 else:
                     print(path)
 
-        displayPacks = ["textures"] + valid_packs
         packImages = []
 
         # types dropdown
@@ -138,8 +153,9 @@ class selectPage(tk.Frame):
                                                                        sticky=tkinter.E)
         chosenTypeBase = ttk.Combobox(self, values=list(displayPacks), state="readonly")
         chosenTypeBase.grid(row=2, column=3, columnspan=1, pady=5, sticky=tkinter.W)
-        # chosenTypeBase.bind("<<ComboboxSelected>>", changeTextureDD)
         chosenTypeBase.set(displayPacks[0])
+        (tk.Button(self, text="Change type base", command=changeTypeBase)
+         .grid(row=3, column=3, columnspan=1, pady=5, sticky=tkinter.W))
 
         # Textures dropdown
         tk.Label(self, text="Texture:", bg="black", fg="white").grid(row=3, column=0, columnspan=1, sticky=tkinter.E)
@@ -148,7 +164,7 @@ class selectPage(tk.Frame):
         chosenTexture.bind("<<ComboboxSelected>>", changePictures)
         chosenTexture.set(typesAndTextures.get(next(iter(typesAndTextures)))[0])
 
-        radios = tkinter.IntVar(self, 0)
+        radios = tkinter.StringVar(self, "")
         for i, pack in enumerate(displayPacks):
             if pack == "textures":
                 path = TEXTURES_PATH + DEFAULT_TEXTURES + "/" + chosenType.get() + "/" + chosenTexture.get()
@@ -161,8 +177,12 @@ class selectPage(tk.Frame):
             texturesImage['image'] = img
             img.image = img
             texturesImage.grid(row=4, column=i, columnspan=1, pady=5)
-            tkinter.ttk.Radiobutton(self, text=pack, variable=radios, value=i).grid(row=5, column=i, columnspan=1, pady=5)
+            tkinter.ttk.Radiobutton(self, text=pack, variable=radios, value=pack).grid(row=5, column=i, columnspan=1,
+                                                                                    pady=5)
             packImages.append(texturesImage)
+
+        (tk.Button(self, text="Change texture", command=changeTexture)
+         .grid(row=6, column=0, columnspan=20))
 
 
 # GUI
@@ -177,14 +197,14 @@ def resizeImage(image_path, width, height):
 app = App()
 app.mainloop()
 
-# GuiUtils.sectionPrint("Debug")
-# pack_name = "MyPack1"
-# pack_base = "textures"
-# pack_format = 22
-# pack_description = "My first texture pack"
-# newPack = Pack(pack_name, pack_base, pack_format, pack_description)
-# newPack.assignTexture("block", "VanillaXBR - 1.20.4", "activator_rail")
-# newPack.assignTexture("item", "VanillaXBR - 1.20.4", "*")
+GuiUtils.sectionPrint("Debug")
+pack_name = "MyPack1"
+pack_base = "textures"
+pack_format = 22
+pack_description = "My first texture pack"
+newPack = Pack(pack_name, pack_base, pack_format, pack_description, typesAndTextures.keys())
+newPack.assignTexture("block", "VanillaXBR - 1.20.4", "activator_rail")
+newPack.assignTexture("item", "VanillaXBR - 1.20.4", "*")
 #
 # PackUtils.createBasePack(OUTPUT_PATH, pack_name, newPack.getJson())
 #

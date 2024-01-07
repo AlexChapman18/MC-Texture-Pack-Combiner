@@ -4,26 +4,9 @@ PACK_JSON_TEMPLATE = """
 {
     "pckmeta": {
         "version": 1,
-        "name": "null",
-        "base_pack": "null"
+        "name": "null"
     },
-    "texture_data": {
-        "block": {},
-        "colormap": {},
-        "effect": {},
-        "entity": {},
-        "environment": {},
-        "font": {},
-        "gui": {},
-        "item": {},
-        "map": {},
-        "misc": {},
-        "mob_effect": {},
-        "models": {},
-        "painting": {},
-        "particle": {},
-        "trims": {}
-    },
+    "texture_data": {},
     "mcmeta": {
         "pack": {
             "pack_format": -1,
@@ -35,12 +18,15 @@ PACK_JSON_TEMPLATE = """
 
 
 class Pack:
-    def __init__(self, pack_name, pack_base, pack_format, pack_description):
+    def __init__(self, pack_name, pack_base, pack_format, pack_description, types):
         self.pack_json = json.loads(PACK_JSON_TEMPLATE)
         self.pack_json["pckmeta"]["name"] = pack_name
         self.pack_json["pckmeta"]["base_pack"] = pack_base
         self.pack_json["mcmeta"]["pack"]["pack_format"] = pack_format
         self.pack_json["mcmeta"]["pack"]["description"] = pack_description
+        for type in types:
+            self.pack_json["texture_data"][type] = {}
+            self.pack_json["texture_data"][type+"_base"] = pack_base
 
     def assignTexture(self, type, pack, name):
         self.pack_json["texture_data"][type].update({pack: name})
@@ -50,3 +36,6 @@ class Pack:
 
     def getJson(self):
         return self.pack_json
+
+    def changeTypeBase(self, type, base):
+        self.pack_json["texture_data"][type + "_base"] = base

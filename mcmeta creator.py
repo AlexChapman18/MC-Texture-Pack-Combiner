@@ -1,34 +1,56 @@
-import tkinter as tk
-from tkinter import ttk
+from tkinter import *
+import ctypes
 
-def update_second_dropdown(*args):
-    selected_item = first_dropdown.get()
+# end of imports
 
-    # Update options for the second dropdown based on the selected item in the first dropdown
-    if selected_item == "Option 1":
-        second_dropdown['values'] = ["Option 1 - A", "Option 1 - B", "Option 1 - C"]
-    elif selected_item == "Option 2":
-        second_dropdown['values'] = ["Option 2 - X", "Option 2 - Y", "Option 2 - Z"]
-    else:
-        second_dropdown['values'] = []
+# try for hidpi
 
-# Create the main window
-root = tk.Tk()
-root.title("Dropdown Example")
+try:
+    ctypes.windll.shcore.SetProcessDpiAwareness(True)
+except: pass
 
-# Create the first dropdown
-first_label = tk.Label(root, text="Select Category:")
-first_label.grid(row=0, column=0, padx=10, pady=10, sticky=tk.W)
-categories = ["Option 1", "Option 2"]
-first_dropdown = ttk.Combobox(root, values=categories, state="readonly")
-first_dropdown.grid(row=0, column=1, padx=10, pady=10, sticky=tk.W)
-first_dropdown.bind("<<ComboboxSelected>>", update_second_dropdown)
+window = Tk()
+window.title("pack.mcmeta Creator v1.4")
+window.configure(bg="black")
+window.resizable(width=FALSE, height=FALSE)
 
-# Create the second dropdown
-second_label = tk.Label(root, text="Select Subcategory:")
-second_label.grid(row=1, column=0, padx=10, pady=10, sticky=tk.W)
-second_dropdown = ttk.Combobox(root, values=[], state="readonly")
-second_dropdown.grid(row=1, column=1, padx=10, pady=10, sticky=tk.W)
 
-# Run the Tkinter event loop
-root.mainloop()
+# variables
+
+# there aren't any needed functions
+
+# functions
+
+
+def generatemcmeta():
+    resPackName = nameEntry.get()
+    minecraftVersion = versionEntry.get()
+    packmcmeta = open('pack.mcmeta', 'w+')
+    filecontents = '{"pack":{"pack_format":' + minecraftVersion + ',"description":"' + resPackName + '"}}'
+    packmcmeta.write(filecontents)
+    packmcmeta.close()
+    generateStatus.config(text="The file has been generated!", fg="green")
+
+
+# tkinter elements
+
+titleLabel = Label(window, text="pack.mcmeta Creator", bg="black", fg="white", font=("none", 25)) .pack()
+titleSpace = Label(window, text="by cnnd", bg="black", fg="white", font=("none", 7)) .pack()
+versionLabel = Label(window, text="Please enter the desired Minecraft version below.", bg="black", fg="white") .pack()
+versionEntry = Entry(window, bg="white", fg="black")
+versionEntry.pack()
+versionHelpLabel1 = Label(window, text="1 for Minecraft 1.6 to 1.8", bg="black", fg="white", font=("none", 10)) .pack()
+versionHelpLabel2 = Label(window, text="2 for Minecraft 1.9 and 1.10", bg="black", fg="white", font=("none", 10)) .pack()
+versionHelpLabel3 = Label(window, text="3 for Minecraft 1.11 and 1.12", bg="black", fg="white", font=("none", 10)) .pack()
+versionHelpLabel4 = Label(window, text="4 for Minecraft 1.13 and 1.14", bg="black", fg="white", font=("none", 10)) .pack()
+versionHelpLabel4 = Label(window, text="5 for Minecraft 1.15 and 1.16", bg="black", fg="white", font=("none", 10)) .pack()
+nameLabel = Label(window, text="Please enter the name of the texture pack below.", bg="black", fg="white") .pack()
+nameEntry = Entry(window, bg="white", fg="black")
+nameEntry.pack()
+generateSpace = Label(window, fg="white", bg="black") .pack()
+generateButton = Button(window, text="Generate pack.mcmeta", command=generatemcmeta) .pack()
+generateStatus = Label(window, text="The file has not been generated.", bg="black", fg="red")
+generateStatus.pack()
+
+
+window.mainloop()
